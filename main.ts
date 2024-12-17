@@ -1,3 +1,18 @@
+bluetooth.onBluetoothConnected(function () {
+    isBLE = true
+    basic.showIcon(IconNames.SmallSquare)
+})
+bluetooth.onBluetoothDisconnected(function () {
+    isBLE = false
+    basic.showIcon(IconNames.Chessboard)
+})
+input.onButtonPressed(Button.A, function () {
+    basic.showIcon(IconNames.Yes)
+    P0Led(code0)
+    P1Led(code1)
+    P2Led(code2)
+    basic.showIcon(IconNames.SmallSquare)
+})
 function P2Led (array: any[]) {
     control.runInParallel(function() {
         let forNum = 0;
@@ -110,6 +125,17 @@ function P1Led (array: any[]) {
         }
     })
 }
+bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+    basic.showIcon(IconNames.Yes)
+    data = bluetooth.uartReadUntil(serial.delimiters(Delimiters.NewLine)).split(":")
+    code0 = data[0].split(",")
+    code1 = data[1].split(",")
+    code2 = data[2].split(",")
+    P0Led(code0)
+    P1Led(code1)
+    P2Led(code2)
+    basic.showIcon(IconNames.SmallSquare)
+})
 function P0Led (array: any[]) {
     control.runInParallel(function() {
         let forNum2 = 0;
@@ -166,11 +192,19 @@ function P0Led (array: any[]) {
         }
     })
 }
+let data: string[] = []
+let code2: string[] = []
+let code1: string[] = []
+let code0: string[] = []
+let isBLE = false
+bluetooth.startUartService()
+isBLE = false
+basic.showIcon(IconNames.Chessboard)
 // --- init
 pins.digitalWritePin(DigitalPin.P0, 0)
 pins.digitalWritePin(DigitalPin.P1, 0)
 pins.digitalWritePin(DigitalPin.P2, 0)
-let code0 = [
+code0 = [
 "on",
 "wait",
 "off",
@@ -178,7 +212,7 @@ let code0 = [
 ]
 // "forstart2",
 // "forend"
-let code1 = [
+code1 = [
 "off",
 "wait",
 "on",
@@ -186,7 +220,7 @@ let code1 = [
 ]
 // "forstart4",
 // "forend"
-let code2 = [
+code2 = [
 "on",
 "wait",
 "wait",
@@ -194,7 +228,9 @@ let code2 = [
 "wait"
 ]
 basic.forever(function () {
-    P0Led(code0)
-    P1Led(code1)
-    P2Led(code2)
+    if (isBLE == true) {
+        basic.showIcon(IconNames.SmallSquare)
+    } else {
+        basic.showIcon(IconNames.Chessboard)
+    }
 })
